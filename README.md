@@ -1,2 +1,2 @@
-# vkk
+# VVK
 Koneiden Kapina - team Adele
