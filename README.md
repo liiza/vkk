@@ -2,4 +2,4 @@
 Koneiden Kapina - team Adele
 
 
-Comment the application.properties settings if you want to develop application with embedded h2
+Comment the lines in application.properties if you want to develop application locally with h2
