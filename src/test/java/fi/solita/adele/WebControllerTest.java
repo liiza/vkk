@@ -18,7 +18,7 @@ import static org.hamcrest.CoreMatchers.is;
 @WebAppConfiguration
 @IntegrationTest({"server.port:0",
         "spring.datasource.url:jdbc:h2:mem:vkk;DB_CLOSE_ON_EXIT=FALSE"})
-public class HelloControllerTest {
+public class WebControllerTest {
     @Value("${local.server.port}")
     int port;
 
@@ -28,9 +28,9 @@ public class HelloControllerTest {
     }
 
     @Test
-    public void testHello() throws Exception {
-        when().get("/").then()
-                .body(is("Hello World!"));
+    public void testStatus() throws Exception {
+        when().get("/status").then()
+                .body(is("ok"));
     }
 
 //    @Test
