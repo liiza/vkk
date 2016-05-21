@@ -1,5 +1,6 @@
-package fi.solita.adele;
+package fi.solita.adele.event;
 
+import fi.solita.adele.App;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 @SpringApplicationConfiguration(classes = App.class)
 @WebAppConfiguration
 @IntegrationTest({"server.port:0"})
-public class WebControllerTest {
+public class EventControllerTest {
     @Value("${local.server.port}")
     int port;
 
@@ -48,14 +49,6 @@ public class WebControllerTest {
                 Objects.equals(e1.getTime(), e2.getTime()) &&
                 Objects.equals(e1.getType(), e2.getType()) &&
                 Objects.equals(e1.getValue(), e2.getValue());
-    }
-
-    @Test
-    public void status_should_return_ok() throws Exception {
-        ResponseEntity<String> result = restTemplate.getForEntity(url("/status"), String.class);
-
-        assertEquals(HttpStatus.OK, result.getStatusCode());
-        assertEquals("ok", result.getBody());
     }
 
     @Test

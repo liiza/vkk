@@ -1,4 +1,4 @@
-package fi.solita.adele.status;
+package fi.solita.adele.place.status;
 
 public class PlaceStatus {
     private long place_id;

@@ -1,4 +1,4 @@
-package fi.solita.adele;
+package fi.solita.adele.event;
 
 import java.time.LocalDateTime;
 

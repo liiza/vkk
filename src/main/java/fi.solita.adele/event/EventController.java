@@ -1,7 +1,5 @@
-package fi.solita.adele;
+package fi.solita.adele.event;
 
-import fi.solita.adele.status.PlaceStatus;
-import fi.solita.adele.status.StatusService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,35 +10,22 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-public class WebController {
+public class EventController {
 
     @Resource
-    private EventRepository dataService;
-
-    @Resource
-    private StatusService statusService;
-
-    @RequestMapping(value = "/status", method = RequestMethod.GET)
-    String hello() {
-        return "ok";
-    }
+    private EventRepository eventRepository;
 
     @RequestMapping(value = "/v1/event", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     List<Event> getAllEvents() {
-        return dataService.all();
+        return eventRepository.all();
     }
 
     @RequestMapping(value = "/v1/event", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     ResponseEntity addEvent(@RequestBody Event event) {
-        if (dataService.addEvent(event) > 0) {
+        if (eventRepository.addEvent(event) > 0) {
             return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @RequestMapping(value = "/v1/status/current", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    List<PlaceStatus> getCurrentStatusForAllPlaces() {
-        return statusService.getCurrentStatusForAllPlaces();
     }
 }

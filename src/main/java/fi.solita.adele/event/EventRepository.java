@@ -1,4 +1,4 @@
-package fi.solita.adele;
+package fi.solita.adele.event;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;

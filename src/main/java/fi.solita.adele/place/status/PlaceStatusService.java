@@ -1,4 +1,4 @@
-package fi.solita.adele.status;
+package fi.solita.adele.place.status;
 
 import org.springframework.stereotype.Service;
 
@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class StatusService {
+public class PlaceStatusService {
 
     public List<PlaceStatus> getCurrentStatusForAllPlaces() {
         return Arrays.asList(
