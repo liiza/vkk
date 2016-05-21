@@ -1,22 +1,14 @@
 package fi.solita.adele.event;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
-public class Event {
-    private int ID;
+public class CreateEventCommand {
     private int device_id;
-    private int place_id;
-    private LocalDateTime time;
+    private Optional<Integer> place_id;
+    private Optional<LocalDateTime> time;
     private EventType type;
     private double value;
-
-    public int getID() {
-        return ID;
-    }
-
-    public void setID(int ID) {
-        this.ID = ID;
-    }
 
     public int getDevice_id() {
         return device_id;
@@ -26,19 +18,19 @@ public class Event {
         this.device_id = device_id;
     }
 
-    public int getPlace_id() {
+    public Optional<Integer> getPlace_id() {
         return place_id;
     }
 
-    public void setPlace_id(int place_id) {
+    public void setPlace_id(Optional<Integer> place_id) {
         this.place_id = place_id;
     }
 
-    public LocalDateTime getTime() {
+    public Optional<LocalDateTime> getTime() {
         return time;
     }
 
-    public void setTime(LocalDateTime time) {
+    public void setTime(Optional<LocalDateTime> time) {
         this.time = time;
     }
 

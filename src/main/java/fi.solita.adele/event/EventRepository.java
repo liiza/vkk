@@ -12,6 +12,7 @@ import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public class EventRepository {
@@ -23,7 +24,7 @@ public class EventRepository {
         event.setDevice_id(rs.getInt("DEVICE_ID"));
         event.setPlace_id(rs.getInt("PLACE_ID"));
         event.setTime(LocalDateTime.ofInstant(rs.getTimestamp("TIME").toInstant(), ZoneId.systemDefault()));
-        event.setType(rs.getString("TYPE"));
+        event.setType(EventType.valueOf(rs.getString("TYPE")));
         event.setValue(rs.getDouble("VALUE"));
         return event;
     };
@@ -36,21 +37,19 @@ public class EventRepository {
         return jdbcTemplate.query(sql, eventRowMapper);
     }
 
-    public int addEvent(final Event event) {
+    public int addEvent(final CreateEventCommand event) {
+        final int placeId = event.getPlace_id().orElseGet(() -> getLastPlaceIdForDeviceId(event.getDevice_id()));
+
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String sql = "insert into " + EVENT + " (device_id, place_id, time, type, value) values (?, ?, ?, ?, ?)";
-        final PreparedStatementCreator statementCreator = new PreparedStatementCreator() {
-
-            @Override
-            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                ps.setInt(1, event.getDevice_id());
-                ps.setInt(2, event.getPlace_id());
-                ps.setTimestamp(3, Timestamp.valueOf(event.getTime()));
-                ps.setString(4, event.getType());
-                ps.setDouble(5, event.getValue());
-                return ps;
-            }
+        final PreparedStatementCreator statementCreator = connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setInt(1, event.getDevice_id());
+            ps.setInt(2, placeId);
+            ps.setTimestamp(3, Timestamp.valueOf(event.getTime().orElse(LocalDateTime.now())));
+            ps.setString(4, event.getType().toString());
+            ps.setDouble(5, event.getValue());
+            return ps;
         };
 
         jdbcTemplate.update(statementCreator, keyHolder);
@@ -60,5 +59,18 @@ public class EventRepository {
     public Event getEvent(int id) {
         Object[] args = {id};
         return jdbcTemplate.queryForObject("select * from " + EVENT + " where id = ? ", args, eventRowMapper);
+    }
+
+    public int getLastPlaceIdForDeviceId(final int deviceId) {
+        final String sql = "select place_id, max(time) " +
+                "from " + EVENT + " " +
+                "where device_id = ? " +
+                "group by place_id " +
+                "order by 2 desc";
+        final List<Map<String, Object>> result = jdbcTemplate.queryForList(sql, deviceId);
+        if(result.isEmpty()) {
+            throw new NoPreviousEventForDeviceException(deviceId);
+        }
+        return (int) result.get(0).get("place_id");
     }
 }

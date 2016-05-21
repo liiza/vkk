@@ -26,7 +26,13 @@ public class EventController {
 
     @RequestMapping(value = "/v1/event", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    int addEvent(@RequestBody Event event) {
+    int addEvent(@RequestBody CreateEventCommand event) {
         return eventRepository.addEvent(event);
+    }
+
+    @ExceptionHandler(NoPreviousEventForDeviceException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    String handleNoPreviousEventForDeviceException(NoPreviousEventForDeviceException ex) {
+        return ex.getMessage();
     }
 }
