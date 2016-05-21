@@ -15,7 +15,7 @@ public class WebController {
         return "ok";
     }
 
-    @RequestMapping("/all") List<Device> getAllData() {
+    @RequestMapping("/all") List<Event> getAllData() {
         return dataService.all();
     }
 }

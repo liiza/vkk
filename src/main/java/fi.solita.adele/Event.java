@@ -1,10 +1,10 @@
 package fi.solita.adele;
 
-public class Device {
+public class Event {
     private int ID;
     private String time;
     private String type;
-    private int value;
+    private double value;
 
     public int getID() {
         return ID;
@@ -30,11 +30,11 @@ public class Device {
         this.type = type;
     }
 
-    public int getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(int value) {
+    public void setValue(double value) {
         this.value = value;
     }
 }

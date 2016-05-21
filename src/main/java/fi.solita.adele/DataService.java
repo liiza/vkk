@@ -10,19 +10,20 @@ import java.util.List;
 @Component
 public class DataService {
 
-    @Resource private JdbcTemplate jdbcTemplate;
-
-    private static final RowMapper<Device> deviceRowMapper = (rs, rowNum) -> {
-        Device device = new Device();
-        device.setID(Integer.parseInt(rs.getString("ID")));
-        device.setTime(rs.getString("TIME"));
-        device.setType(rs.getString("TYPE"));
-        device.setValue(Integer.parseInt(rs.getString("VALUE")));
-        return device;
+    private static final String EVENT = "EVENT";
+    private static final RowMapper<Event> deviceRowMapper = (rs, rowNum) -> {
+        Event event = new Event();
+        event.setID(Integer.parseInt(rs.getString("ID")));
+        event.setTime(rs.getString("TIME"));
+        event.setType(rs.getString("TYPE"));
+        event.setValue(Double.parseDouble(rs.getString("VALUE")));
+        return event;
     };
 
-    public List<Device> all() {
-        String sql = "select * from DEVICE";
+    @Resource private JdbcTemplate jdbcTemplate;
+
+    public List<Event> all() {
+        String sql = "select * from " + EVENT;
         return jdbcTemplate.query(sql, deviceRowMapper);
     }
 }

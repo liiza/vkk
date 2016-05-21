@@ -15,7 +15,7 @@ import javax.sql.DataSource;
 @Configuration
 public class AppConfig {
 
-    private static final String DB_URL = "jdbc:h2:mem:export;DB_CLOSE_DELAY=-1;MODE=Oracle";
+    private static final String DB_URL = "jdbc:h2:mem:export;DB_CLOSE_DELAY=-1;MODE=PostgreSQL";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "sa";
 
