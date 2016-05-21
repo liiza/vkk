@@ -2,11 +2,10 @@ package fi.solita.adele;
 
 import fi.solita.adele.status.PlaceStatus;
 import fi.solita.adele.status.StatusService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -34,5 +33,14 @@ public class WebController {
     @RequestMapping(value = "/v1/status/current", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     List<PlaceStatus> getCurrentStatusForAllPlaces() {
         return statusService.getCurrentStatusForAllPlaces();
+    }
+
+    @RequestMapping(value = "/v1/add/event", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity getCurrentStatusForAllPlaces(@RequestBody Event event) {
+        if (dataService.addEvent(event) > 0) {
+            return new ResponseEntity<>(HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }

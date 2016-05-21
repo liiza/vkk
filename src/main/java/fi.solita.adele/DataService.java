@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -25,5 +26,19 @@ public class DataService {
     public List<Event> all() {
         String sql = "select * from " + EVENT;
         return jdbcTemplate.query(sql, deviceRowMapper);
+    }
+
+    public int addEvent(Event event) {
+        String sql = "insert into " + EVENT + " (time, type, value) values (?, ?, ?)";
+        Object[] args = {event.getTime() != null ? event.getTime() : LocalDate.now().toString(),
+                                event.getType(),
+                                event.getValue()};
+
+        return jdbcTemplate.update(sql, args);
+    }
+
+    private Event getEvent(Integer id) {
+        Object[] args = {id};
+        return jdbcTemplate.queryForObject("select * from " + EVENT + " where id = ? ", args, deviceRowMapper);
     }
 }
