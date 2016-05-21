@@ -1,7 +1,6 @@
-package fi.solita.adele.event;
+package fi.solita.adele.place;
 
 import fi.solita.adele.App;
-import fi.solita.adele.place.Place;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,10 +12,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -25,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 @SpringApplicationConfiguration(classes = App.class)
 @WebAppConfiguration
 @IntegrationTest({"server.port:0"})
-public class EventControllerTest {
+public class PlaceControllerTest {
     @Value("${local.server.port}")
     int port;
 
@@ -35,8 +33,8 @@ public class EventControllerTest {
         return "http://localhost:" + port + suffix;
     }
 
-    private List<Event> getAllEvents() {
-        return Arrays.asList(restTemplate.getForObject(url("/v1/event"), Event[].class));
+    private List<Place> getAllPlaces() {
+        return Arrays.asList(restTemplate.getForObject(url("/v1/place"), Place[].class));
     }
 
     private int addPlace(Place place) {
@@ -45,36 +43,39 @@ public class EventControllerTest {
         return result.getBody();
     }
 
-    private void addEvent(Event event) {
-        ResponseEntity<Integer> result = restTemplate.postForEntity(url("/v1/event"), event, Integer.class);
-        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+    private Place getPlace(int id) {
+        return restTemplate.getForEntity(url("/v1/place/" + id), Place.class).getBody();
     }
 
-    private boolean eventsEqualIgnoreId(Event e1, Event e2) {
-        return Objects.equals(e1.getDevice_id(), e2.getDevice_id()) &&
-                Objects.equals(e1.getPlace_id(), e2.getPlace_id()) &&
-                Objects.equals(e1.getTime(), e2.getTime()) &&
-                Objects.equals(e1.getType(), e2.getType()) &&
-                Objects.equals(e1.getValue(), e2.getValue());
+    @Test
+    public void should_list_all_places() {
+        Place place = new Place();
+        place.setName("Paikka 2");
+        place.setLatitude(875.99856);
+        place.setLongitude(984.98449);
+
+        int id = addPlace(place);
+        Optional<Place> savedPlaceOptional = getAllPlaces().stream().filter(p -> p.getId() == id).findFirst();
+
+        assertTrue(savedPlaceOptional.isPresent());
+        assertEquals(place.getName(), savedPlaceOptional.get().getName());
+        assertEquals(place.getLongitude(), savedPlaceOptional.get().getLongitude(), 0.001);
+        assertEquals(place.getLatitude(), savedPlaceOptional.get().getLatitude(), 0.001);
     }
 
     @Test
     public void should_add_new_event() {
         Place place = new Place();
-        place.setName("Paikka 2");
-        place.setLatitude(875.99856);
-        place.setLongitude(984.98449);
-        int placeId = addPlace(place);
+        place.setName("Paikka 1");
+        place.setLatitude(123.456);
+        place.setLongitude(456.789);
 
-        Event event = new Event();
-        event.setDevice_id(100);
-        event.setPlace_id(placeId);
-        event.setTime(LocalDateTime.now());
-        event.setType("liiketunnistin");
-        event.setValue(1.0);
+        int id = addPlace(place);
+        Place savedPlace = getPlace(id);
 
-        addEvent(event);
-        assertTrue(getAllEvents().stream().anyMatch(e -> eventsEqualIgnoreId(e, event)));
+        assertEquals(place.getName(), savedPlace.getName());
+        assertEquals(place.getLongitude(), savedPlace.getLongitude(), 0.001);
+        assertEquals(place.getLatitude(), savedPlace.getLatitude(), 0.001);
 
     }
 }

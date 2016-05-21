@@ -14,7 +14,7 @@ import java.util.List;
 public class EventRepository {
 
     private static final String EVENT = "EVENT";
-    private static final RowMapper<Event> deviceRowMapper = (rs, rowNum) -> {
+    private static final RowMapper<Event> eventRowMapper = (rs, rowNum) -> {
         Event event = new Event();
         event.setID(rs.getInt("ID"));
         event.setDevice_id(rs.getInt("DEVICE_ID"));
@@ -30,7 +30,7 @@ public class EventRepository {
 
     public List<Event> all() {
         String sql = "select * from " + EVENT;
-        return jdbcTemplate.query(sql, deviceRowMapper);
+        return jdbcTemplate.query(sql, eventRowMapper);
     }
 
     public int addEvent(Event event) {
@@ -42,6 +42,6 @@ public class EventRepository {
 
     private Event getEvent(Integer id) {
         Object[] args = {id};
-        return jdbcTemplate.queryForObject("select * from " + EVENT + " where id = ? ", args, deviceRowMapper);
+        return jdbcTemplate.queryForObject("select * from " + EVENT + " where id = ? ", args, eventRowMapper);
     }
 }
