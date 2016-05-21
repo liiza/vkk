@@ -1,11 +1,14 @@
 package fi.solita.adele.event;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -33,14 +36,28 @@ public class EventRepository {
         return jdbcTemplate.query(sql, eventRowMapper);
     }
 
-    public int addEvent(Event event) {
-        String sql = "insert into " + EVENT + " (device_id, place_id, time, type, value) values (?, ?, ?, ?, ?)";
-        Object[] args = {event.getDevice_id(), event.getPlace_id(), Timestamp.valueOf(event.getTime()), event.getType(), event.getValue()};
+    public int addEvent(final Event event) {
+        final KeyHolder keyHolder = new GeneratedKeyHolder();
+        final String sql = "insert into " + EVENT + " (device_id, place_id, time, type, value) values (?, ?, ?, ?, ?)";
+        final PreparedStatementCreator statementCreator = new PreparedStatementCreator() {
 
-        return jdbcTemplate.update(sql, args);
+            @Override
+            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setInt(1, event.getDevice_id());
+                ps.setInt(2, event.getPlace_id());
+                ps.setTimestamp(3, Timestamp.valueOf(event.getTime()));
+                ps.setString(4, event.getType());
+                ps.setDouble(5, event.getValue());
+                return ps;
+            }
+        };
+
+        jdbcTemplate.update(statementCreator, keyHolder);
+        return keyHolder.getKey().intValue();
     }
 
-    private Event getEvent(Integer id) {
+    public Event getEvent(int id) {
         Object[] args = {id};
         return jdbcTemplate.queryForObject("select * from " + EVENT + " where id = ? ", args, eventRowMapper);
     }

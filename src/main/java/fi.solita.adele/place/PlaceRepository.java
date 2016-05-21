@@ -38,7 +38,7 @@ public class PlaceRepository {
     public int addPlace(final Place place) {
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String sql = "insert into " + PLACE + " (name, latitude, longitude) values (?, ?, ?)";
-        PreparedStatementCreator statementCreator = new PreparedStatementCreator() {
+        final PreparedStatementCreator statementCreator = new PreparedStatementCreator() {
 
             @Override
             public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
@@ -54,7 +54,7 @@ public class PlaceRepository {
         return keyHolder.getKey().intValue();
     }
 
-    public Place getPlace(int id) {
+    public Place getPlace(final int id) {
         Object[] args = {id};
         return jdbcTemplate.queryForObject("select * from " + PLACE + " where id = ? ", args, placeRowMapper);
     }
