@@ -2,26 +2,31 @@ package fi.solita.adele;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.time.LocalDate;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
-@Component
-public class DataService {
+@Repository
+public class EventRepository {
 
     private static final String EVENT = "EVENT";
     private static final RowMapper<Event> deviceRowMapper = (rs, rowNum) -> {
         Event event = new Event();
-        event.setID(Integer.parseInt(rs.getString("ID")));
-        event.setTime(rs.getString("TIME"));
+        event.setID(rs.getInt("ID"));
+        event.setDevice_id(rs.getInt("DEVICE_ID"));
+        event.setPlace_id(rs.getInt("PLACE_ID"));
+        event.setTime(LocalDateTime.ofInstant(rs.getTimestamp("TIME").toInstant(), ZoneId.systemDefault()));
         event.setType(rs.getString("TYPE"));
-        event.setValue(Double.parseDouble(rs.getString("VALUE")));
+        event.setValue(rs.getDouble("VALUE"));
         return event;
     };
 
-    @Resource private JdbcTemplate jdbcTemplate;
+    @Resource
+    private JdbcTemplate jdbcTemplate;
 
     public List<Event> all() {
         String sql = "select * from " + EVENT;
@@ -29,10 +34,8 @@ public class DataService {
     }
 
     public int addEvent(Event event) {
-        String sql = "insert into " + EVENT + " (time, type, value) values (?, ?, ?)";
-        Object[] args = {event.getTime() != null ? event.getTime() : LocalDate.now().toString(),
-                                event.getType(),
-                                event.getValue()};
+        String sql = "insert into " + EVENT + " (device_id, place_id, time, type, value) values (?, ?, ?, ?, ?)";
+        Object[] args = {event.getDevice_id(), event.getPlace_id(), Timestamp.valueOf(event.getTime()), event.getType(), event.getValue()};
 
         return jdbcTemplate.update(sql, args);
     }

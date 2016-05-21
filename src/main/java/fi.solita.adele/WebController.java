@@ -15,7 +15,7 @@ import java.util.List;
 public class WebController {
 
     @Resource
-    private DataService dataService;
+    private EventRepository dataService;
 
     @Resource
     private StatusService statusService;
@@ -25,22 +25,22 @@ public class WebController {
         return "ok";
     }
 
-    @RequestMapping(value = "/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    List<Event> getAllData() {
+    @RequestMapping(value = "/v1/event", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    List<Event> getAllEvents() {
         return dataService.all();
     }
 
-    @RequestMapping(value = "/v1/status/current", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    List<PlaceStatus> getCurrentStatusForAllPlaces() {
-        return statusService.getCurrentStatusForAllPlaces();
-    }
-
-    @RequestMapping(value = "/v1/add/event", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    ResponseEntity getCurrentStatusForAllPlaces(@RequestBody Event event) {
+    @RequestMapping(value = "/v1/event", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    ResponseEntity addEvent(@RequestBody Event event) {
         if (dataService.addEvent(event) > 0) {
             return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @RequestMapping(value = "/v1/status/current", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    List<PlaceStatus> getCurrentStatusForAllPlaces() {
+        return statusService.getCurrentStatusForAllPlaces();
     }
 }

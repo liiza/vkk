@@ -1,8 +1,12 @@
 package fi.solita.adele;
 
+import java.time.LocalDateTime;
+
 public class Event {
     private int ID;
-    private String time;
+    private int device_id;
+    private int place_id;
+    private LocalDateTime time;
     private String type;
     private double value;
 
@@ -14,11 +18,27 @@ public class Event {
         this.ID = ID;
     }
 
-    public String getTime() {
+    public int getDevice_id() {
+        return device_id;
+    }
+
+    public void setDevice_id(int device_id) {
+        this.device_id = device_id;
+    }
+
+    public int getPlace_id() {
+        return place_id;
+    }
+
+    public void setPlace_id(int place_id) {
+        this.place_id = place_id;
+    }
+
+    public LocalDateTime getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(LocalDateTime time) {
         this.time = time;
     }
 
