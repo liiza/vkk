@@ -35,7 +35,7 @@ public class PlaceRepository {
         return jdbcTemplate.query(sql, placeRowMapper);
     }
 
-    public int addPlace(final Place place) {
+    public int addPlace(final CreatePlaceCommand place) {
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String sql = "insert into " + PLACE + " (name, latitude, longitude) values (?, ?, ?)";
         final PreparedStatementCreator statementCreator = new PreparedStatementCreator() {

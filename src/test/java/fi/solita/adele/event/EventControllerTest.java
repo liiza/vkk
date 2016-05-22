@@ -1,7 +1,7 @@
 package fi.solita.adele.event;
 
 import fi.solita.adele.App;
-import fi.solita.adele.place.Place;
+import fi.solita.adele.place.CreatePlaceCommand;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,9 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = App.class)
@@ -44,7 +42,7 @@ public class EventControllerTest {
     }
 
     private int addPlace() {
-        Place place = new Place();
+        CreatePlaceCommand place = new CreatePlaceCommand();
         place.setName("Paikka 2");
         place.setLatitude(875.99856);
         place.setLongitude(984.98449);

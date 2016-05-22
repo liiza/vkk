@@ -37,7 +37,7 @@ public class PlaceControllerTest {
         return Arrays.asList(restTemplate.getForObject(url("/v1/place"), Place[].class));
     }
 
-    private int addPlace(Place place) {
+    private int addPlace(CreatePlaceCommand place) {
         ResponseEntity<Integer> result = restTemplate.postForEntity(url("/v1/place"), place, Integer.class);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
         return result.getBody();
@@ -49,7 +49,7 @@ public class PlaceControllerTest {
 
     @Test
     public void should_list_all_places() {
-        Place place = new Place();
+        CreatePlaceCommand place = new CreatePlaceCommand();
         place.setName("Paikka 2");
         place.setLatitude(875.99856);
         place.setLongitude(984.98449);
@@ -65,7 +65,7 @@ public class PlaceControllerTest {
 
     @Test
     public void should_add_new_event() {
-        Place place = new Place();
+        CreatePlaceCommand place = new CreatePlaceCommand();
         place.setName("Paikka 1");
         place.setLatitude(123.456);
         place.setLongitude(456.789);

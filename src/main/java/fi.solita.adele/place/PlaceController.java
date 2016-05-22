@@ -26,7 +26,7 @@ public class PlaceController {
 
     @RequestMapping(value = "/v1/place", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    int addPlace(@RequestBody Place place) {
+    int addPlace(@RequestBody CreatePlaceCommand place) {
         return placeRepository.addPlace(place);
     }
 }
