@@ -8,9 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
@@ -38,16 +36,12 @@ public class PlaceRepository {
     public int addPlace(final CreatePlaceCommand place) {
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String sql = "insert into " + PLACE + " (name, latitude, longitude) values (?, ?, ?)";
-        final PreparedStatementCreator statementCreator = new PreparedStatementCreator() {
-
-            @Override
-            public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-                ps.setString(1, place.getName());
-                ps.setDouble(2, place.getLatitude());
-                ps.setDouble(3, place.getLongitude());
-                return ps;
-            }
+        final PreparedStatementCreator statementCreator = connection -> {
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, place.getName());
+            ps.setDouble(2, place.getLatitude());
+            ps.setDouble(3, place.getLongitude());
+            return ps;
         };
 
         jdbcTemplate.update(statementCreator, keyHolder);

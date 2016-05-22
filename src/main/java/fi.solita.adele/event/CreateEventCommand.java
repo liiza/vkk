@@ -4,17 +4,17 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public class CreateEventCommand {
-    private int device_id;
+    private Integer device_id;
     private Optional<Integer> place_id;
     private Optional<LocalDateTime> time;
     private EventType type;
-    private double value;
+    private Double value;
 
-    public int getDevice_id() {
+    public Integer getDevice_id() {
         return device_id;
     }
 
-    public void setDevice_id(int device_id) {
+    public void setDevice_id(Integer device_id) {
         this.device_id = device_id;
     }
 
@@ -42,11 +42,11 @@ public class CreateEventCommand {
         this.type = type;
     }
 
-    public double getValue() {
+    public Double getValue() {
         return value;
     }
 
-    public void setValue(double value) {
+    public void setValue(Double value) {
         this.value = value;
     }
 }

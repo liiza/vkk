@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class EventRepository {
@@ -38,7 +39,10 @@ public class EventRepository {
     }
 
     public int addEvent(final CreateEventCommand event) {
-        final int placeId = event.getPlace_id().orElseGet(() -> getLastPlaceIdForDeviceId(event.getDevice_id()));
+        EventValidator.validateCreate(event);
+        final Optional<Integer> placeIdOptional = event.getPlace_id() != null ? event.getPlace_id() : Optional.empty();
+        final int placeId = placeIdOptional.orElseGet(() -> getLastPlaceIdForDeviceId(event.getDevice_id()));
+        final Optional<LocalDateTime> timeOptional = event.getTime() != null ? event.getTime() : Optional.empty();
 
         final KeyHolder keyHolder = new GeneratedKeyHolder();
         final String sql = "insert into " + EVENT + " (device_id, place_id, time, type, value) values (?, ?, ?, ?, ?)";
@@ -46,7 +50,7 @@ public class EventRepository {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, event.getDevice_id());
             ps.setInt(2, placeId);
-            ps.setTimestamp(3, Timestamp.valueOf(event.getTime().orElse(LocalDateTime.now())));
+            ps.setTimestamp(3, Timestamp.valueOf(timeOptional.orElse(LocalDateTime.now())));
             ps.setString(4, event.getType().toString());
             ps.setDouble(5, event.getValue());
             return ps;

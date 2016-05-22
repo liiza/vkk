@@ -1,5 +1,7 @@
 package fi.solita.adele.event;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import fi.solita.adele.App;
 import fi.solita.adele.place.CreatePlaceCommand;
 import org.junit.Test;
@@ -7,8 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.HttpClientErrorException;
@@ -16,9 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -57,16 +56,51 @@ public class EventControllerTest {
         return result.getBody().intValue();
     }
 
+    private ResponseEntity<Integer> addEvent(Integer deviceId, Integer placeId, LocalDateTime time, String type, Double value) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        String json = getJson(deviceId, placeId, time, type, value);
+        HttpEntity<String> entity = new HttpEntity<String>(json, headers);
+
+        return restTemplate.postForEntity(url("/v1/event"), entity, Integer.class);
+    }
+
     private Event getEvent(int id) {
         return restTemplate.getForObject(url("/v1/event/" + id), Event.class);
     }
 
     private void assertEventsEqual(CreateEventCommand command, Event event) {
-        assertEquals(command.getDevice_id(), event.getDevice_id());
+        assertEquals(command.getDevice_id().intValue(), event.getDevice_id());
         assertEquals(command.getPlace_id().get().intValue(), event.getPlace_id());
         assertEquals(command.getTime().get(), event.getTime());
         assertEquals(command.getType(), event.getType());
         assertEquals(command.getValue(), event.getValue(), valueDelta);
+    }
+
+    private String getJson(Integer deviceId, Integer placeId, LocalDateTime time, String type, Double value) {
+        Map<String, String> json = new HashMap<>();
+        if (deviceId != null) {
+            json.put("device_id", deviceId.toString());
+        }
+        if (placeId != null) {
+            json.put("place_id", placeId.toString());
+        }
+        if (time != null) {
+            json.put("time", time.toString());
+        }
+        if (type != null) {
+            json.put("type", type);
+        }
+        if (value != null) {
+            json.put("value", value.toString());
+        }
+        try {
+            return new ObjectMapper().writeValueAsString(json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
     @Test
@@ -134,7 +168,7 @@ public class EventControllerTest {
 
         Event event = getEvent(eventId3);
 
-        assertEquals(command3.getDevice_id(), event.getDevice_id());
+        assertEquals(command3.getDevice_id().intValue(), event.getDevice_id());
         assertEquals(placeId2, event.getPlace_id());
         assertEquals(command3.getTime().get(), event.getTime());
         assertEquals(command3.getType(), event.getType());
@@ -143,7 +177,7 @@ public class EventControllerTest {
 
     @Test
     public void should_not_add_new_event_if_there_is_no_previous_event_for_device() {
-        Integer placeId = addPlace();
+        addPlace();
 
         CreateEventCommand command1 = new CreateEventCommand();
         command1.setDevice_id(300);
@@ -155,9 +189,9 @@ public class EventControllerTest {
         try {
             addEvent(command1);
             fail();
-        }
-        catch (HttpClientErrorException ex) {
+        } catch (HttpClientErrorException ex) {
             assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+            assertEquals("No previous event for device 300", ex.getResponseBodyAsString());
         }
     }
 
@@ -175,10 +209,66 @@ public class EventControllerTest {
         int eventId = addEvent(command);
         Event event = getEvent(eventId);
 
-        assertEquals(command.getDevice_id(), event.getDevice_id());
+        assertEquals(command.getDevice_id().intValue(), event.getDevice_id());
         assertEquals(command.getPlace_id().get().intValue(), event.getPlace_id());
         assertTrue(event.getTime().toLocalDate().equals(LocalDate.now()));
         assertEquals(command.getType(), event.getType());
         assertEquals(command.getValue(), event.getValue(), valueDelta);
+    }
+
+    @Test
+    public void should_not_add_new_event_with_missing_device_id() {
+        try {
+            addEvent(null, addPlace(), LocalDateTime.now(), EventType.occupied.toString(), 1.0);
+            fail();
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals("Event Device Id is missing", ex.getResponseBodyAsString());
+        }
+    }
+
+    @Test
+    public void should_not_add_new_event_with_missing_place_id() {
+        try {
+            addEvent(600, null, LocalDateTime.now(), EventType.occupied.toString(), 1.0);
+            fail();
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+            assertEquals("No previous event for device 600", ex.getResponseBodyAsString());
+        }
+    }
+
+    @Test
+    public void should_not_add_new_event_with_missing_type() {
+        try {
+            addEvent(600, addPlace(), LocalDateTime.now(), null, 1.0);
+            fail();
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals("Event type is missing", ex.getResponseBodyAsString());
+        }
+    }
+
+    @Test
+    public void should_not_add_new_event_with_unknown_type() {
+        try {
+            addEvent(600, addPlace(), LocalDateTime.now(), "abc", 1.0);
+            fail();
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertTrue(ex.getResponseBodyAsString().startsWith("Can not construct instance of fi.solita.adele.event.EventType " +
+                    "from String value 'abc': value not one of declared Enum instance names"));
+        }
+    }
+
+    @Test
+    public void should_not_add_new_event_with_missing_value() {
+        try {
+            addEvent(600, addPlace(), LocalDateTime.now(), EventType.occupied.toString(), null);
+            fail();
+        } catch (HttpClientErrorException ex) {
+            assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+            assertEquals("Event value is missing", ex.getResponseBodyAsString());
+        }
     }
 }
