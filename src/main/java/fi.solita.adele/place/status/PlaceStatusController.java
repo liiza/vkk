@@ -14,10 +14,10 @@ import java.util.List;
 public class PlaceStatusController {
 
     @Resource
-    private PlaceStatusService placeStatusService;
+    private PlaceStatusRepository placeStatusRepository;
 
     @RequestMapping(value = "/v1/status/current", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     List<PlaceStatus> getCurrentStatusForAllPlaces() {
-        return placeStatusService.getCurrentStatusForAllPlaces();
+        return placeStatusRepository.getCurrentStatusForAllPlaces();
     }
 }

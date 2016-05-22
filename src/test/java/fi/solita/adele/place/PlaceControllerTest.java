@@ -64,7 +64,7 @@ public class PlaceControllerTest {
     }
 
     @Test
-    public void should_add_new_event() {
+    public void should_add_new_place() {
         CreatePlaceCommand place = new CreatePlaceCommand();
         place.setName("Paikka 1");
         place.setLatitude(123.456);
