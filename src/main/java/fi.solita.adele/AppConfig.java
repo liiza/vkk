@@ -14,12 +14,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.util.TimeZone;
 
 @Configuration
+@EnableSwagger2
 public class AppConfig {
 
     private static final String DB_URL = "jdbc:h2:mem:vvk;DB_CLOSE_DELAY=-1;MODE=PostgreSQL";
@@ -89,5 +94,12 @@ public class AppConfig {
         objectMapper.configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false);
         objectMapper.setTimeZone(TimeZone.getDefault());
         return objectMapper;
+    }
+
+    @Bean
+    public Docket vvkApiDocumentation() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(new ApiInfoBuilder().title("VVK API").build())
+                .directModelSubstitute(java.time.LocalDateTime.class, String.class);
     }
 }
