@@ -2,4 +2,5 @@
 Koneiden Kapina - team Adele
 
 
-Comment the lines in application.properties if you want to develop application locally with h2
+Heroku: https://secret-oasis-98680.herokuapp.com/
+Swagger: https://secret-oasis-98680.herokuapp.com/swagger-ui.html
