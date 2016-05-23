@@ -4,5 +4,6 @@ public enum EventType {
     occupied,
     ambient_light,
     movement,
-    obscured
+    obscured,
+    closed
 }
