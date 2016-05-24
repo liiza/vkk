@@ -24,6 +24,11 @@ public class PlaceController {
         return placeRepository.getPlace(id);
     }
 
+    @RequestMapping(value = "/v1/place/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    Place updatePlaceById(@PathVariable("id") int id, @RequestBody CreatePlaceCommand place) {
+        return placeRepository.updatePlace(id, place);
+    }
+
     @RequestMapping(value = "/v1/place", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     int addPlace(@RequestBody CreatePlaceCommand place) {

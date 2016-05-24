@@ -52,4 +52,11 @@ public class PlaceRepository {
         Object[] args = {id};
         return jdbcTemplate.queryForObject("select * from " + PLACE + " where id = ? ", args, placeRowMapper);
     }
+
+    public Place updatePlace(int id, CreatePlaceCommand place) {
+        final String sql = "update " + PLACE + " set (name, latitude, longitude) values (?, ?, ?) where id = ?";
+        Object[] args = {place.getName(), place.getLatitude(), place.getLongitude(), id};
+        jdbcTemplate.update(sql, args);
+        return getPlace(id);
+    }
 }
