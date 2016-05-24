@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 @WebAppConfiguration
 @IntegrationTest({"server.port:0"})
 public class EventControllerTest {
+
     @Value("${local.server.port}")
     int port;
 
@@ -256,8 +257,8 @@ public class EventControllerTest {
             fail();
         } catch (HttpClientErrorException ex) {
             assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
-            assertTrue(ex.getResponseBodyAsString().startsWith("Can not construct instance of fi.solita.adele.event.EventType " +
-                    "from String value 'abc': value not one of declared Enum instance names"));
+            assertTrue(ex.getResponseBodyAsString().startsWith(
+                    "Can not construct instance of fi.solita.adele.event.EventType " + "from String value 'abc': value not one of declared Enum instance names"));
         }
     }
 

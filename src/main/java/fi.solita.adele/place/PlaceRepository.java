@@ -28,7 +28,7 @@ public class PlaceRepository {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    public List<Place> all() {
+    public List<Place> allPlaces() {
         String sql = "select * from " + PLACE;
         return jdbcTemplate.query(sql, placeRowMapper);
     }

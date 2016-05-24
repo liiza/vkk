@@ -16,7 +16,7 @@ public class PlaceController {
 
     @RequestMapping(value = "/v1/place", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     List<Place> getAllPlaces() {
-        return placeRepository.all();
+        return placeRepository.allPlaces();
     }
 
     @RequestMapping(value = "/v1/place/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -25,6 +25,7 @@ public class PlaceController {
     }
 
     @RequestMapping(value = "/v1/place/{id}", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
     Place updatePlaceById(@PathVariable("id") int id, @RequestBody CreatePlaceCommand place) {
         return placeRepository.updatePlace(id, place);
     }

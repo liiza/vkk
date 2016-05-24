@@ -77,4 +77,27 @@ public class EventRepository {
         }
         return (int) result.get(0).get("place_id");
     }
+
+    public UsageStats getUsageStats(GetUsageStatsCommand query) {
+        validateQuery(query);
+
+        final String sql = "select avg(VALUE) " +
+                "from " + EVENT + " " +
+                "where TIME >= ? " +
+                "and TIME <= ? " +
+                "and TYPE = ?";
+
+        Object[] args = {Timestamp.valueOf(query.getStarting()), Timestamp.valueOf(query.getEnding()), EventType.occupied.toString()};
+        Double average = jdbcTemplate.queryForObject(sql, args, Double.class);
+        UsageStats usageStats = new UsageStats();
+        usageStats.setAverage(average);
+        usageStats.setType(EventType.occupied);
+        return usageStats;
+    }
+
+    private void validateQuery(GetUsageStatsCommand query) {
+        if (query.getStarting() == null || query.getEnding() ==null) {
+            throw new IllegalArgumentException("Starting and ending are mandatory. ");
+        }
+    }
 }
