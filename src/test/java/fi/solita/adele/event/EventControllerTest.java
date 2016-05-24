@@ -14,10 +14,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -38,7 +40,30 @@ public class EventControllerTest {
     }
 
     private List<Event> getAllEvents() {
-        return Arrays.asList(restTemplate.getForObject(url("/v1/event"), Event[].class));
+        return getAllEvents(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        );
+    }
+
+    private List<Event> getAllEvents(Optional<LocalDateTime> starting,
+                                     Optional<LocalDateTime> ending,
+                                     Optional<Integer[]> device_id,
+                                     Optional<Integer[]> place_id,
+                                     Optional<EventType> type) {
+
+        UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(url("/v1/event"));
+
+        starting.ifPresent(v -> uri.queryParam("starting", v));
+        ending.ifPresent(v -> uri.queryParam("ending", v));
+        device_id.map(Arrays::asList).orElse(new ArrayList<>()).forEach(v -> uri.queryParam("device_id", v));
+        place_id.map(Arrays::asList).orElse(new ArrayList<>()).forEach(v -> uri.queryParam("place_id", v));
+        type.ifPresent(v -> uri.queryParam("type", v));
+
+        return Arrays.asList(restTemplate.getForObject(uri.build().toUri(), Event[].class));
     }
 
     private int addPlace() {
@@ -54,7 +79,7 @@ public class EventControllerTest {
     private int addEvent(CreateEventCommand event) {
         ResponseEntity<Integer> result = restTemplate.postForEntity(url("/v1/event"), event, Integer.class);
         assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        return result.getBody().intValue();
+        return result.getBody();
     }
 
     private ResponseEntity<Integer> addEvent(Integer deviceId, Integer placeId, LocalDateTime time, String type, Double value) {
@@ -77,6 +102,15 @@ public class EventControllerTest {
         assertEquals(command.getTime().get(), event.getTime());
         assertEquals(command.getType(), event.getType());
         assertEquals(command.getValue(), event.getValue(), valueDelta);
+    }
+
+    private <T> void assertContainsAll(Collection<T> all, Collection<T> match) {
+        assertTrue("Collection " + all + " does not contain all of " + match, all.containsAll(match));
+    }
+
+    private <T> void assertNotContainsAny(Collection<T> all, Collection<T> noMatch) {
+        List<T> match = noMatch.stream().filter(item -> all.contains(item)).collect(Collectors.toList());
+        assertTrue("Collection " + all + " contains " + match, Collections.disjoint(all, noMatch));
     }
 
     private String getJson(Integer deviceId, Integer placeId, LocalDateTime time, String type, Double value) {
@@ -104,6 +138,16 @@ public class EventControllerTest {
         }
     }
 
+    private CreateEventCommand eventCommand(int placeId) {
+        CreateEventCommand event = new CreateEventCommand();
+        event.setDevice_id(100);
+        event.setPlace_id(Optional.of(placeId));
+        event.setTime(Optional.of(LocalDateTime.now().minusDays(10)));
+        event.setType(EventType.occupied);
+        event.setValue(1.0);
+        return event;
+    }
+
     @Test
     public void should_list_all_events() {
         int placeId = addPlace();
@@ -120,6 +164,117 @@ public class EventControllerTest {
 
         assertTrue(savedEvent.isPresent());
         assertEventsEqual(event, savedEvent.get());
+    }
+
+    @Test
+    public void should_list_events_by_date_range() {
+        int placeId = addPlace();
+
+        CreateEventCommand event1 = eventCommand(placeId);
+        event1.setTime(Optional.of(LocalDateTime.now().minusDays(10)));
+        int eventId1 = addEvent(event1);
+
+        CreateEventCommand event2 = eventCommand(placeId);
+        event2.setTime(Optional.of(LocalDateTime.now().minusDays(5)));
+        int eventId2 = addEvent(event2);
+
+        CreateEventCommand event3 = eventCommand(placeId);
+        event3.setTime(Optional.of(LocalDateTime.now().minusDays(1)));
+        int eventId3 = addEvent(event3);
+
+        Set<Integer> eventIds = getAllEvents(
+                Optional.of(LocalDateTime.now().minusDays(7)),
+                Optional.of(LocalDateTime.now().minusDays(2)),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty()
+        ).stream().map(Event::getID).collect(Collectors.toSet());
+
+        assertContainsAll(eventIds, Arrays.asList(eventId2));
+        assertNotContainsAny(eventIds, Arrays.asList(eventId1, eventId3));
+    }
+
+    @Test
+    public void should_list_events_by_device_ids() {
+        int placeId = addPlace();
+
+        CreateEventCommand event1 = eventCommand(placeId);
+        event1.setDevice_id(1001);
+        int eventId1 = addEvent(event1);
+
+        CreateEventCommand event2 = eventCommand(placeId);
+        event2.setDevice_id(1002);
+        int eventId2 = addEvent(event2);
+
+        CreateEventCommand event3 = eventCommand(placeId);
+        event3.setDevice_id(1003);
+        int eventId3 = addEvent(event3);
+
+        Set<Integer> eventIds = getAllEvents(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(new Integer[] {1002, 1003}),
+                Optional.empty(),
+                Optional.empty()
+        ).stream().map(Event::getID).collect(Collectors.toSet());
+
+        assertContainsAll(eventIds, Arrays.asList(eventId2, eventId3));
+        assertNotContainsAny(eventIds, Arrays.asList(eventId1));
+    }
+
+    @Test
+    public void should_list_events_by_place_ids() {
+        int placeId1 = addPlace();
+        int placeId2 = addPlace();
+        int placeId3 = addPlace();
+
+        CreateEventCommand event1 = eventCommand(placeId1);
+        int eventId1 = addEvent(event1);
+
+        CreateEventCommand event2 = eventCommand(placeId2);
+        int eventId2 = addEvent(event2);
+
+        CreateEventCommand event3 = eventCommand(placeId3);
+        int eventId3 = addEvent(event3);
+
+        Set<Integer> eventIds = getAllEvents(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(new Integer[] {placeId2, placeId3}),
+                Optional.empty()
+        ).stream().map(Event::getID).collect(Collectors.toSet());
+
+        assertContainsAll(eventIds, Arrays.asList(eventId2, eventId3));
+        assertNotContainsAny(eventIds, Arrays.asList(eventId1));
+    }
+
+    @Test
+    public void should_list_events_by_type() {
+        int placeId = addPlace();
+
+        CreateEventCommand event1 = eventCommand(placeId);
+        event1.setType(EventType.occupied);
+        int eventId1 = addEvent(event1);
+
+        CreateEventCommand event2 = eventCommand(placeId);
+        event2.setType(EventType.closed);
+        int eventId2 = addEvent(event2);
+
+        CreateEventCommand event3 = eventCommand(placeId);
+        event3.setType(EventType.movement);
+        int eventId3 = addEvent(event3);
+
+        Set<Integer> eventIds = getAllEvents(
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(EventType.movement)
+        ).stream().map(Event::getID).collect(Collectors.toSet());
+
+        assertContainsAll(eventIds, Arrays.asList(eventId3));
+        assertNotContainsAny(eventIds, Arrays.asList(eventId1, eventId2));
     }
 
     @Test

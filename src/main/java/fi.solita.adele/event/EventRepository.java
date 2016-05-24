@@ -3,17 +3,20 @@ package fi.solita.adele.event;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 public class EventRepository {
@@ -33,9 +36,48 @@ public class EventRepository {
     @Resource
     private JdbcTemplate jdbcTemplate;
 
-    public List<Event> all() {
-        String sql = "select * from " + EVENT;
-        return jdbcTemplate.query(sql, eventRowMapper);
+    @Resource
+    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public List<Event> all(Optional<LocalDateTime> starting,
+                           Optional<LocalDateTime> ending,
+                           Optional<Integer[]> device_id,
+                           Optional<Integer[]> place_id,
+                           Optional<EventType> type) {
+        final List<String> where = new ArrayList<>();
+        final MapSqlParameterSource params = new MapSqlParameterSource();
+
+        starting.ifPresent(start -> {
+            where.add("time >= :starting");
+            params.addValue("starting", Timestamp.valueOf(start));
+        });
+        ending.ifPresent(end -> {
+            where.add("time <= :ending");
+            params.addValue("ending", Timestamp.valueOf(end));
+        });
+        device_id.filter(ids -> ids.length > 0).ifPresent(ids -> {
+            where.add("device_id IN (:device_id)");
+            params.addValue("device_id", Arrays.asList(ids));
+        });
+        place_id.filter(ids -> ids.length > 0).ifPresent(ids -> {
+            where.add("place_id IN (:place_id)");
+            params.addValue("place_id", Arrays.asList(ids));
+        });
+        type.ifPresent(t -> {
+            where.add("type = :type");
+            params.addValue("type", t.toString());
+        });
+
+        String whereSql = "";
+        if( where.size() > 0) {
+            whereSql = " where " + where.stream().collect(Collectors.joining(" AND "));
+        }
+
+        final String sql = "select * " +
+                "from " + EVENT +
+                whereSql;
+
+        return namedParameterJdbcTemplate.query(sql, params, eventRowMapper);
     }
 
     public int addEvent(final CreateEventCommand event) {
@@ -72,7 +114,7 @@ public class EventRepository {
                 "group by place_id " +
                 "order by 2 desc";
         final List<Map<String, Object>> result = jdbcTemplate.queryForList(sql, deviceId);
-        if(result.isEmpty()) {
+        if (result.isEmpty()) {
             throw new NoPreviousEventForDeviceException(deviceId);
         }
         return (int) result.get(0).get("place_id");
@@ -96,7 +138,7 @@ public class EventRepository {
     }
 
     private void validateQuery(GetUsageStatsCommand query) {
-        if (query.getStarting() == null || query.getEnding() ==null) {
+        if (query.getStarting() == null || query.getEnding() == null) {
             throw new IllegalArgumentException("Starting and ending are mandatory. ");
         }
     }
