@@ -22,6 +22,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.util.Date;
 import java.util.TimeZone;
 
 @Configuration
@@ -106,6 +107,6 @@ public class AppConfig {
     public Docket vvkApiDocumentation() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder().title("VVK API").build())
-                .directModelSubstitute(java.time.LocalDateTime.class, String.class);
+                .directModelSubstitute(java.time.LocalDateTime.class, Date.class);
     }
 }
