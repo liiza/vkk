@@ -13,6 +13,7 @@ import static org.junit.Assert.assertEquals;
 
 public class PlaceTestUtil {
     private static final RestTemplate restTemplate = new RestTemplate();
+    public static final double LOCATION_COMPARISON_DELTA = 0.00001;
 
     private final int testServerPort;
 

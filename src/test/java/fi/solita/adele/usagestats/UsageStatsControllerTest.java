@@ -81,6 +81,6 @@ public class UsageStatsControllerTest {
                 Optional.empty(),
                 Optional.empty());
 
-        assertEquals(((double)3/4), usageStats.getAverage(), valueDelta);
+        assertEquals(((double)3/4), usageStats.getAverage(), EVENT_VALUE_COMPARISON_DELTA);
     }
 }

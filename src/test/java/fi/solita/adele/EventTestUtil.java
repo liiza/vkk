@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 public class EventTestUtil {
     private static final RestTemplate restTemplate = new RestTemplate();
 
-    public static final double valueDelta = 0.001;
+    public static final double EVENT_VALUE_COMPARISON_DELTA = 0.001;
     public static final double OCCUPIED = 1.0;
     public static final double FREE = 0.0;
 
@@ -87,7 +87,7 @@ public class EventTestUtil {
         assertEquals(command.getPlace_id().get().intValue(), event.getPlace_id());
         assertEquals(command.getTime().get(), event.getTime());
         assertEquals(command.getType(), event.getType());
-        assertEquals(command.getValue(), event.getValue(), valueDelta);
+        assertEquals(command.getValue(), event.getValue(), EVENT_VALUE_COMPARISON_DELTA);
     }
 
     public static String getJson(Integer deviceId, Integer placeId, LocalDateTime time, String type, Double value) {

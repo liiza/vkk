@@ -13,6 +13,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.util.Optional;
 
+import static fi.solita.adele.PlaceTestUtil.LOCATION_COMPARISON_DELTA;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -43,8 +44,8 @@ public class PlaceControllerTest {
 
         assertTrue(savedPlaceOptional.isPresent());
         assertEquals(place.getName(), savedPlaceOptional.get().getName());
-        assertEquals(place.getLongitude(), savedPlaceOptional.get().getLongitude(), 0.001);
-        assertEquals(place.getLatitude(), savedPlaceOptional.get().getLatitude(), 0.001);
+        assertEquals(place.getLongitude(), savedPlaceOptional.get().getLongitude(), LOCATION_COMPARISON_DELTA);
+        assertEquals(place.getLatitude(), savedPlaceOptional.get().getLatitude(), LOCATION_COMPARISON_DELTA);
     }
 
     @Test
@@ -58,8 +59,8 @@ public class PlaceControllerTest {
         Place savedPlace = placeTestUtil.getPlace(id);
 
         assertEquals(place.getName(), savedPlace.getName());
-        assertEquals(place.getLongitude(), savedPlace.getLongitude(), 0.001);
-        assertEquals(place.getLatitude(), savedPlace.getLatitude(), 0.001);
+        assertEquals(place.getLongitude(), savedPlace.getLongitude(), LOCATION_COMPARISON_DELTA);
+        assertEquals(place.getLatitude(), savedPlace.getLatitude(), LOCATION_COMPARISON_DELTA);
 
     }
 }

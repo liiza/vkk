@@ -221,7 +221,7 @@ public class EventControllerTest {
         assertEquals(placeId2, event.getPlace_id());
         assertEquals(command3.getTime().get(), event.getTime());
         assertEquals(command3.getType(), event.getType());
-        assertEquals(command3.getValue(), event.getValue(), valueDelta);
+        assertEquals(command3.getValue(), event.getValue(), EVENT_VALUE_COMPARISON_DELTA);
     }
 
     @Test
@@ -262,7 +262,7 @@ public class EventControllerTest {
         assertEquals(command.getPlace_id().get().intValue(), event.getPlace_id());
         assertTrue(event.getTime().toLocalDate().equals(LocalDate.now()));
         assertEquals(command.getType(), event.getType());
-        assertEquals(command.getValue(), event.getValue(), valueDelta);
+        assertEquals(command.getValue(), event.getValue(), EVENT_VALUE_COMPARISON_DELTA);
     }
 
     @Test

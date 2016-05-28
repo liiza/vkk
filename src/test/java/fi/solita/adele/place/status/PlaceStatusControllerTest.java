@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import static fi.solita.adele.EventTestUtil.FREE;
 import static fi.solita.adele.EventTestUtil.OCCUPIED;
+import static fi.solita.adele.PlaceTestUtil.LOCATION_COMPARISON_DELTA;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -80,14 +81,14 @@ public class PlaceStatusControllerTest {
         Optional<PlaceStatus> place1Status = result.stream().filter(status -> status.getPlace_id() == placeId1).findFirst();
         assertTrue(place1Status.isPresent());
         assertTrue(place1Status.get().isOccupied());
-        assertEquals(place1.getLongitude(), place1Status.get().getLongitude(), 0.001);
-        assertEquals(place1.getLatitude(), place1Status.get().getLatitude(), 0.001);
+        assertEquals(place1.getLongitude(), place1Status.get().getLongitude(), LOCATION_COMPARISON_DELTA);
+        assertEquals(place1.getLatitude(), place1Status.get().getLatitude(), LOCATION_COMPARISON_DELTA);
 
         Optional<PlaceStatus> place2Status = result.stream().filter(status -> status.getPlace_id() == placeId2).findFirst();
         assertTrue(place2Status.isPresent());
         assertFalse(place2Status.get().isOccupied());
-        assertEquals(place2.getLongitude(), place2Status.get().getLongitude(), 0.001);
-        assertEquals(place2.getLatitude(), place2Status.get().getLatitude(), 0.001);
+        assertEquals(place2.getLongitude(), place2Status.get().getLongitude(), LOCATION_COMPARISON_DELTA);
+        assertEquals(place2.getLatitude(), place2Status.get().getLatitude(), LOCATION_COMPARISON_DELTA);
 
         assertFalse(result.stream().anyMatch(status -> status.getPlace_id() == placeId3));
     }
