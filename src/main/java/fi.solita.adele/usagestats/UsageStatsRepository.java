@@ -1,6 +1,7 @@
 package fi.solita.adele.usagestats;
 
 import fi.solita.adele.event.EventType;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -59,7 +60,7 @@ public class UsageStatsRepository {
         params.addValue("type", eventType.toString());
 
         String whereSql = "";
-        if( where.size() > 0) {
+        if (where.size() > 0) {
             whereSql = " where " + where.stream().collect(Collectors.joining(" AND "));
         }
 
@@ -68,7 +69,14 @@ public class UsageStatsRepository {
                 whereSql + " " +
                 "group by type";
 
-        return namedParameterJdbcTemplate.queryForObject(sql, params, usageStatsRowMapper);
+        try {
+            return namedParameterJdbcTemplate.queryForObject(sql, params, usageStatsRowMapper);
+        } catch (EmptyResultDataAccessException e) {
+            UsageStats usageStats = new UsageStats();
+            usageStats.setAverage(0.0);
+            usageStats.setType(eventType);
+            return usageStats;
+        }
     }
 
 }

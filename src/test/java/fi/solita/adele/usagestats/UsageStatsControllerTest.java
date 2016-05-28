@@ -78,9 +78,25 @@ public class UsageStatsControllerTest {
                 Optional.of(LocalDateTime.now().minusDays(1)),
                 Optional.of(LocalDateTime.now().plusDays(1)),
                 Optional.empty(),
-                Optional.empty(),
+                Optional.of(new Integer[] {placeId}),
                 Optional.empty());
 
         assertEquals(((double)3/4), usageStats.getAverage(), EVENT_VALUE_COMPARISON_DELTA);
+        assertEquals(EventType.occupied, usageStats.getType());
+    }
+
+    @Test
+    public void should_handle_period_with_no_event() {
+        int placeId = placeTestUtil.addPlace();
+
+        UsageStats usageStats = getUsageStats(
+                Optional.of(LocalDateTime.now().minusDays(1)),
+                Optional.of(LocalDateTime.now().plusDays(1)),
+                Optional.empty(),
+                Optional.of(new Integer[] {placeId}),
+                Optional.empty());
+
+        assertEquals(0.0, usageStats.getAverage(), EVENT_VALUE_COMPARISON_DELTA);
+        assertEquals(EventType.occupied, usageStats.getType());
     }
 }
