@@ -1,4 +1,6 @@
-package fi.solita.adele.event;
+package fi.solita.adele.usagestats;
+
+import fi.solita.adele.event.EventType;
 
 public class UsageStats {
     private EventType type;

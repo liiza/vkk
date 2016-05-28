@@ -1,10 +1,10 @@
 package fi.solita.adele.place.status;
 
 import fi.solita.adele.App;
-import fi.solita.adele.event.CreateEventCommand;
-import fi.solita.adele.event.EventType;
-import fi.solita.adele.place.CreatePlaceCommand;
+import fi.solita.adele.EventTestUtil;
+import fi.solita.adele.PlaceTestUtil;
 import fi.solita.adele.place.Place;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +20,9 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
+import static fi.solita.adele.EventTestUtil.FREE;
+import static fi.solita.adele.EventTestUtil.OCCUPIED;
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -29,42 +30,22 @@ import static org.junit.Assert.*;
 @WebAppConfiguration
 @IntegrationTest({"server.port:0"})
 public class PlaceStatusControllerTest {
+    private static final RestTemplate restTemplate = new RestTemplate();
+
     @Value("${local.server.port}")
     int port;
 
-    private RestTemplate restTemplate = new RestTemplate();
-    private Random random = new Random();
+    private PlaceTestUtil placeTestUtil;
+    private EventTestUtil eventTestUtil;
+
+    @Before
+    public void setup() {
+        placeTestUtil = new PlaceTestUtil(port);
+        eventTestUtil = new EventTestUtil(port);
+    }
 
     private String url(String suffix) {
         return "http://localhost:" + port + suffix;
-    }
-
-    private int addEvent(int placeId, LocalDateTime time, boolean occupied) {
-        CreateEventCommand event = new CreateEventCommand();
-        event.setDevice_id(1);
-        event.setPlace_id(Optional.of(placeId));
-        event.setTime(Optional.of(time));
-        event.setType(EventType.occupied);
-        event.setValue(occupied ? 1.0 : 0.0);
-
-        ResponseEntity<Integer> result = restTemplate.postForEntity(url("/v1/event"), event, Integer.class);
-        assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        return result.getBody().intValue();
-    }
-
-    private int addPlace() {
-        CreatePlaceCommand place = new CreatePlaceCommand();
-        place.setName("Paikka " + random.nextInt());
-        place.setLatitude(random.nextDouble());
-        place.setLongitude(random.nextDouble());
-
-        ResponseEntity<Integer> result = restTemplate.postForEntity(url("/v1/place"), place, Integer.class);
-        assertEquals(HttpStatus.CREATED, result.getStatusCode());
-        return result.getBody();
-    }
-
-    private Place getPlace(int id) {
-        return restTemplate.getForEntity(url("/v1/place/" + id), Place.class).getBody();
     }
 
     private List<PlaceStatus> getCurrentStatusForAllPlaces() {
@@ -75,21 +56,23 @@ public class PlaceStatusControllerTest {
 
     @Test
     public void should_list_current_state_for_all_places() {
-        final int placeId1 = addPlace();
-        final int placeId2 = addPlace();
-        final int placeId3 = addPlace();
+        int deviceId = 1;
 
-        final Place place1 = getPlace(placeId1);
-        final Place place2 = getPlace(placeId2);
-        final Place place3 = getPlace(placeId3);
+        final int placeId1 = placeTestUtil.addPlace();
+        final int placeId2 = placeTestUtil.addPlace();
+        final int placeId3 = placeTestUtil.addPlace();
 
-        addEvent(placeId1, LocalDateTime.now().minusDays(3), false);
-        addEvent(placeId1, LocalDateTime.now().minusDays(2), false);
-        addEvent(placeId1, LocalDateTime.now().minusDays(1), true);
+        final Place place1 = placeTestUtil.getPlace(placeId1);
+        final Place place2 = placeTestUtil.getPlace(placeId2);
+        final Place place3 = placeTestUtil.getPlace(placeId3);
 
-        addEvent(placeId2, LocalDateTime.now().minusDays(3), true);
-        addEvent(placeId2, LocalDateTime.now().minusDays(2), true);
-        addEvent(placeId2, LocalDateTime.now().minusDays(1), false);
+        eventTestUtil.addEvent(deviceId, placeId1, LocalDateTime.now().minusDays(3), FREE);
+        eventTestUtil.addEvent(deviceId, placeId1, LocalDateTime.now().minusDays(2), FREE);
+        eventTestUtil.addEvent(deviceId, placeId1, LocalDateTime.now().minusDays(1), OCCUPIED);
+
+        eventTestUtil.addEvent(deviceId, placeId2, LocalDateTime.now().minusDays(3), OCCUPIED);
+        eventTestUtil.addEvent(deviceId, placeId2, LocalDateTime.now().minusDays(2), OCCUPIED);
+        eventTestUtil.addEvent(deviceId, placeId2, LocalDateTime.now().minusDays(1), FREE);
 
         List<PlaceStatus> result = getCurrentStatusForAllPlaces();
         assertNotNull(result);

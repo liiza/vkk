@@ -59,10 +59,4 @@ public class EventController {
         }
         return ex.getMessage();
     }
-
-    @RequestMapping(value = "/v1/query/usagestats", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.OK)
-    UsageStats usageStats(@RequestBody GetUsageStatsCommand query) {
-        return eventRepository.getUsageStats(query);
-    }
 }
