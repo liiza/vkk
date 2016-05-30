@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -21,6 +22,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+import java.util.Date;
 import java.util.TimeZone;
 
 @Configuration
@@ -57,6 +59,11 @@ public class AppConfig {
     @Bean
     public JdbcTemplate jdbcTemplate() {
         return new JdbcTemplate(dataSource());
+    }
+
+    @Bean
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate() {
+        return new NamedParameterJdbcTemplate(dataSource());
     }
 
     @PostConstruct
@@ -100,6 +107,6 @@ public class AppConfig {
     public Docket vvkApiDocumentation() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder().title("VVK API").build())
-                .directModelSubstitute(java.time.LocalDateTime.class, String.class);
+                .directModelSubstitute(java.time.LocalDateTime.class, Date.class);
     }
 }
