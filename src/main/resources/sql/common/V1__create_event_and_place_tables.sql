@@ -1,8 +1,8 @@
 create table PLACE (
     ID serial not null PRIMARY KEY,
     NAME varchar(200) not null,
-    LATITUDE real not null,
-    LONGITUDE real not null
+    LATITUDE double precision not null,
+    LONGITUDE double precision not null
 );
 
 create table EVENT (

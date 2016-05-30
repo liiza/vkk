@@ -1,5 +1,3 @@
-alter table PLACE alter LATITUDE double precision;
-alter table PLACE alter LONGITUDE double precision;
 
 insert into PLACE (NAME, LATITUDE, LONGITUDE) values ('Vessa 1', 60.17667308232766, 24.93886023759842);
 insert into PLACE (NAME, LATITUDE, LONGITUDE) values ('Vessa 2', 60.17667274884376, 24.93882603943349);
